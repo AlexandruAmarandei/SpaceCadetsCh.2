@@ -12,12 +12,30 @@ import java.text.SimpleDateFormat;
 import java.util.Timer;
 import java.util.TimerTask;
 
+class Ball {
+
+    int x, y;
+    int locx, locy;
+    int radius;
+    boolean follows, verification;
+    int directionx, directiony;
+    /*
+    public Ball(int x, int y, int locx, int locy, int radius){
+        this.x = x;
+        this.y = y;
+        this.radius = radius;
+        this.locx = locx;
+        this.locy = locy;
+    }
+     */
+}
+
 public class TextApplet extends Applet implements ActionListener {
 
     static final int N = 100;
-    public static final int FRAME_PERIOD = 100;
+    public static final int FRAME_PERIOD = 50;
     public Timer timer;
-    int counter = 0;
+    int counter = 0, counterball = 0;
     Button button1 = new Button("-");
     public int w, h, x, y, auxx, auxy, width[] = new int[N], height;
     public int directionx[] = new int[100], directiony[] = new int[100];
@@ -26,7 +44,7 @@ public class TextApplet extends Applet implements ActionListener {
     public TextField input = new TextField(30);
     int[] locx = new int[N];
     int[] locy = new int[N];
-
+    public Ball b[] = new Ball[N];
     String[] text = new String[N];
     boolean verification[] = new boolean[N], follows[] = new boolean[N];
     Color[][] colorarr = {
@@ -38,6 +56,7 @@ public class TextApplet extends Applet implements ActionListener {
     @Override
     public void start() {
         final Graphics g = getGraphics();
+
         setup(g);
 
         timer = new Timer(true);
@@ -60,6 +79,9 @@ public class TextApplet extends Applet implements ActionListener {
     public void setup(Graphics g) {
         w = getWidth();
         h = getHeight();
+        for (int i = 0; i < 99; i++) {
+            b[i] = new Ball();
+        }
         add(input);
         add(button1);
         button1.addActionListener(this);
@@ -70,6 +92,7 @@ public class TextApplet extends Applet implements ActionListener {
         Rectangle r = getBounds();
         h = r.height;
         w = r.width;
+
         height = g.getFontMetrics().getHeight();
     }
 
@@ -129,6 +152,56 @@ public class TextApplet extends Applet implements ActionListener {
                 g.setColor(colorarr[locx[i] % 3][locy[i] % 3]);
             }
         }
+
+        for (int i = 0; i < counterball; i++) {
+            if (b[i].follows == false || (b[i].follows == true && auxver)) {
+                if (b[i].verification == false) {
+                    b[i].verification = true;
+                    if (b[i].locx > 175) {
+                        b[i].directionx = 1;
+                    } else {
+                        b[i].directionx = -1;
+                    }
+                    if (b[i].locy > 100) {
+                        b[i].directiony = 1;
+                    } else {
+                        b[i].directiony = -1;
+                    }
+                }
+                if (b[i].locx > w - b[i].radius + 1) {
+                    b[i].locx = w - 1 - b[i].radius;
+                }
+                if (b[i].locy < 8) {
+                    b[i].locy = 9;
+                }
+                if (b[i].locy > 200) {
+                    b[i].locy = 199;
+                }
+                if (b[i].locx == 0) {
+                    b[i].directionx = b[i].directionx * (-1);
+                }
+                if (b[i].locx == w - b[i].radius) {
+                    b[i].directionx = b[i].directionx * (-1);
+                }
+                if (b[i].locy == 8) {
+                    b[i].directiony = b[i].directiony * (-1);
+                }
+                if (b[i].locy == 200) {
+                    b[i].directiony = b[i].directiony * (-1);
+                }
+                b[i].locx = b[i].locx + b[i].directionx;
+                b[i].locy = b[i].locy + b[i].directiony;
+            } else {
+                b[i].locx = auxx;
+                b[i].locy = auxy;
+                b[i].verification = false;
+            }
+            g.fillOval(b[i].locx, b[i].locy, b[i].radius, b[i].radius);
+            if (b[i].locx > 1 && b[i].locx < 350 && b[i].locy < 200 && b[i].locy > 0) {
+                g.setColor(colorarr[b[i].locx % 3][b[i].locy % 3]);
+            }
+
+        }
     }
 
     @Override
@@ -138,40 +211,81 @@ public class TextApplet extends Applet implements ActionListener {
         int second = newinput.indexOf(' ', first + 1);
         int third = newinput.indexOf(' ', second + 1);
         Graphics g = getGraphics();
-        text[counter] = newinput.substring(0, first);
-        width[counter] = g.getFontMetrics().stringWidth(text[counter]);
-        char auxiliarstring[] = newinput.substring(first + 1, second).toCharArray();
-        if (auxiliarstring[0] == '1' || auxiliarstring[0] == 'y') {
-            follows[counter] = true;
-        } else {
-            follows[counter] = false;
-        }
-        String auxiliarstring2 = newinput.substring(second + 1, third);
-        locx[counter] = Integer.parseInt(auxiliarstring2);
-        locy[counter] = Integer.parseInt(newinput.substring(third + 1));
-        if (locx[counter] < 3) {
-            locx[counter] = 3;
-        }
-        if (locy[counter] < 3) {
-            locy[counter] = 3;
-        }
-        if (locx[counter] > w - width[counter] + 1) {
-            locx[counter] = w - 1 - width[counter];
-        }
-        if (locy[counter] > 200) {
-            locy[counter] = 200;
-        }
-        if (locx[counter] > 175) {
-            directionx[counter] = 1;
-        } else {
-            directionx[counter] = -1;
-        }
-        if (locy[counter] > 100) {
-            directiony[counter] = 1;
-        } else {
-            directiony[counter] = -1;
-        }
-        counter++;
+        String auxiliarstring2 = newinput.substring(0, first);
+        System.out.println(counterball);
+        //b[counterball] = new Ball();
+        b[0].follows = true;
+        if (auxiliarstring2.matches("ball")) {
+            char auxiliarstring[] = newinput.substring(first + 1, second).toCharArray();
+            if (auxiliarstring[0] == '1' || auxiliarstring[0] == 'y') {
+                b[counterball].follows = true;
+            } else {
+                b[counterball].follows = false;
+            }
+            int fourth = newinput.indexOf(' ', third + 1);
+            b[counterball].locx = Integer.parseInt(newinput.substring(second + 1, third));
+            b[counterball].locy = Integer.parseInt(newinput.substring(third + 1, fourth));
+            b[counterball].radius = Integer.parseInt(newinput.substring(fourth + 1));
+            if (b[counterball].locx < 3) {
+                b[counterball].locx = 3;
+            }
+            if (b[counterball].locy < 3) {
+                b[counterball].locy = 3;
+            }
+            if (b[counterball].locx > w - b[counterball].radius + 1) {
+                b[counterball].locx = w - 1 - b[counterball].radius;
+            }
+            if (b[counterball].locy > 200) {
+                b[counterball].locy = 200;
+            }
+            if (b[counterball].locx > 175) {
+                b[counterball].directionx = 1;
+            } else {
+                b[counterball].directionx = -1;
+            }
+            if (b[counterball].locy > 100) {
+                b[counterball].directiony = 1;
+            } else {
+                b[counterball].directiony = -1;
+            }
 
+            counterball++;
+
+        } else {
+            text[counter] = auxiliarstring2;
+            width[counter] = g.getFontMetrics().stringWidth(text[counter]);
+            char auxiliarstring[] = newinput.substring(first + 1, second).toCharArray();
+            if (auxiliarstring[0] == '1' || auxiliarstring[0] == 'y') {
+                follows[counter] = true;
+            } else {
+                follows[counter] = false;
+            }
+
+            locx[counter] = Integer.parseInt(newinput.substring(second + 1, third));
+            locy[counter] = Integer.parseInt(newinput.substring(third + 1));
+            if (locx[counter] < 3) {
+                locx[counter] = 3;
+            }
+            if (locy[counter] < 3) {
+                locy[counter] = 3;
+            }
+            if (locx[counter] > w - width[counter] + 1) {
+                locx[counter] = w - 1 - width[counter];
+            }
+            if (locy[counter] > 200) {
+                locy[counter] = 200;
+            }
+            if (locx[counter] > 175) {
+                directionx[counter] = 1;
+            } else {
+                directionx[counter] = -1;
+            }
+            if (locy[counter] > 100) {
+                directiony[counter] = 1;
+            } else {
+                directiony[counter] = -1;
+            }
+            counter++;
+        }
     }
 }
